@@ -1,0 +1,88 @@
+mql5
+//+------------------------------------------------------------------+
+//|                                           MT Rider               |
+//|                            Expert Advisor by forexroboteasy.com   |
+//|                                         Forex Robot Easy Team     |
+//|                            https://forexroboteasy.com             |
+//+------------------------------------------------------------------+
+
+#property copyright 'forexroboteasy.com'
+#property link      'https://forexroboteasy.com'
+
+//+------------------------------------------------------------------+
+//| Include indicator files                                          |
+//+------------------------------------------------------------------+
+#include <MovingAverages.mqh>
+#include <MACD.mqh>
+
+//+------------------------------------------------------------------+
+//| Global variables declaration                                    |
+//+------------------------------------------------------------------+
+int fastEmaPeriod = 12;       // Period for fast EMA calculation
+int slowEmaPeriod = 26;       // Period for slow EMA calculation
+int signalPeriod = 9;         // Period for signal line calculation
+
+//+------------------------------------------------------------------+
+//| Expert initialization function                                  |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+    // Initialize the MACD indicator
+    MACDInit(Symbol(), PERIOD_CURRENT, fastEmaPeriod, slowEmaPeriod, signalPeriod);
+    
+    // Enable the display of all time intervals simultaneously
+    ChartSetInteger(0, CHART_SHOW_PERIOD_SEP, true);
+    
+    return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Expert deinitialization function                                |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+    // Cleanup and remove the MACD indicator
+    MACDCleanup();
+}
+
+//+------------------------------------------------------------------+
+//| Expert start function                                            |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+    // Calculate the MACD values
+    double macdLine[];
+    double signalLine[];
+    double histogram[];
+    MACDOnArray(Close, ArraySize(Close), fastEmaPeriod, slowEmaPeriod, signalPeriod, 0, macdLine, signalLine, histogram);
+    
+    // Calculate the trend direction for all time intervals
+    int trendDirection = 0;
+    for(int i = 0; i < ArraySize(histogram); i++)
+    {
+        if(histogram[i] > 0)
+            trendDirection++;
+        else if(histogram[i] < 0)
+            trendDirection--;
+    }
+    
+    // Calculate the trend average in percentages
+    double trendAverage = (double)trendDirection / ArraySize(histogram) * 100.0;
+    
+    // Display the trend average
+    Comment('Trend Average: ', trendAverage, '%');
+    
+    // Execute trading functions based on the identified trend direction
+    if(trendDirection > 0)
+    {
+        // Execute buy trades
+        // ...
+    }
+    else if(trendDirection < 0)
+    {
+        // Execute sell trades
+        // ...
+    }
+}
+
+//+------------------------------------------------------------------+
